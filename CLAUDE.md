@@ -1,5 +1,55 @@
 # CLAUDE.md - IONOS VPS Agent
 
+---
+
+## The "ii" Framework (Instruction + Implementation)
+
+A self-improving documentation pattern for AI agents. Every workflow exists as TWO files that evolve together.
+
+### Core Concept
+
+```
+instruction/[name].md    →    The "what" and "why" (human-readable docs)
+implementation/[name].*  →    The "how" (executable code/scripts)
+```
+
+**Why two files?**
+- Instructions survive code rewrites
+- Implementation can be regenerated from good instructions
+- Constraints and best practices accumulate over time
+- Any agent can pick up where another left off
+
+### The Loop
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│   READ instruction  ──►  CODE implementation  ──►  EXECUTE  │
+│         ▲                                            │      │
+│         │                                            │      │
+│         └────────────────  ANNEAL  ◄─────────────────┘      │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+1. **READ** - Find instruction file, check for `⚠️ CONSTRAINT` and `✅ BEST PRACTICE` markers
+2. **CODE** - Write/update implementation based on instruction + accumulated knowledge
+3. **EXECUTE** - Run the implementation
+4. **ANNEAL** - Update instruction based on outcome:
+   - **On failure:** Add `⚠️ CONSTRAINT: [what failed and why]`
+   - **On success:** Add `✅ BEST PRACTICE: [what worked and why]`
+
+### Rules
+
+| Rule | Description |
+|------|-------------|
+| **Never Code Blind** | Always read instruction before writing implementation |
+| **Never Regress** | If a constraint exists, respect it - someone learned that the hard way |
+| **Always Anneal** | After every execution, update instruction with learnings |
+| **Instructions Win** | If instruction and implementation disagree, update the code |
+
+---
+
 ## Project Overview
 
 Self-hosted AI coding agent environment on IONOS VPS with VNC browser access via Cloudflare tunnel.
@@ -8,19 +58,21 @@ Self-hosted AI coding agent environment on IONOS VPS with VNC browser access via
 - **VNC Port**: 5901 (via tunnel: vps.braelin.uk)
 - **SSH**: root@74.208.72.227
 
-## Directory Structure
+## Directory Structure (ii Framework)
 
 ```
 ionos-vps/
-├── instruction/          # Information layer (SOPs, setup docs)
-│   └── vps-setup.md      # Complete VPS setup documentation
-├── implementation/       # Implementation layer (executable scripts)
-│   └── setup-vps.sh      # Reproducible setup script
-├── web/                  # Next.js + Convex web UI
-│   ├── src/app/          # React pages
-│   ├── convex/           # Backend functions
-│   └── package.json
-└── CLAUDE.md             # This file
+├── CLAUDE.md                              # This file (project context)
+├── instruction/                           # The "what" and "why"
+│   ├── vps-setup.md                       # VPS setup documentation
+│   └── local_browser_automation.md        # Browser automation docs
+├── implementation/                        # The "how" (executable)
+│   ├── setup-vps.sh                       # VPS setup script
+│   └── dom_screenshot.js                  # Browser automation script
+└── web/                                   # Next.js + Convex web UI
+    ├── src/app/
+    ├── convex/
+    └── package.json
 ```
 
 ## VPS Access
@@ -56,12 +108,8 @@ ionos-vps/
 
 ### Full Documentation
 
-For complete browser automation system documentation:
-```
-C:\HealthyMama\opencode-runner\instruction\local_browser_automation.md
-```
+See `instruction/local_browser_automation.md` for complete documentation:
 
-This contains:
 - Full architecture diagrams (Windows → WSL → Playwright → Firefox)
 - The complete agent loop (NAVIGATE → ANALYZE → DECIDE → ACT → VERIFY → REPEAT)
 - DOM change detection system (MutationObserver, significance filtering)
@@ -142,28 +190,6 @@ After each action, check `changes.json`:
   ▼
   Y (720)
 ```
-
----
-
-## The "ii" Framework
-
-### Rule 1: Every workflow has TWO files
-- `instruction/[name].md` - The "what" and "why"
-- `implementation/[name].py|.sh` - The "how"
-
-### Rule 2: The Loop
-```
-READ instruction → CODE implementation → EXECUTE → ANNEAL
-```
-
-**On failure:** Update instruction with `⚠️ CONSTRAINT: [what failed]`
-**On success:** Update instruction with `✅ BEST PRACTICE: [what worked]`
-
-### Rule 3: Never Regress
-Before coding any workflow:
-1. READ the instruction file first
-2. Check for past failures (⚠️ CONSTRAINT markers)
-3. Follow established best practices (✅ markers)
 
 ---
 
@@ -250,11 +276,9 @@ bunx convex dev      # Start Convex backend
 
 ---
 
-## Reference Documentation
+## Reference Documentation (ii Pairs)
 
-| Document | Location |
-|----------|----------|
-| **Browser Automation (Complete)** | `C:\HealthyMama\opencode-runner\instruction\local_browser_automation.md` |
-| **Project Template** | `C:\HealthyMama\opencode-runner\templates\CLAUDE_BROWSER_TEMPLATE.md` |
-| **VPS Setup Details** | `instruction/vps-setup.md` |
-| **Setup Script** | `implementation/setup-vps.sh` |
+| Instruction | Implementation |
+|-------------|----------------|
+| `instruction/vps-setup.md` | `implementation/setup-vps.sh` |
+| `instruction/local_browser_automation.md` | `implementation/dom_screenshot.js` |
