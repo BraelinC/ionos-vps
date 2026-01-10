@@ -1407,6 +1407,10 @@ source ~/.nvm/nvm.sh  # ALWAYS include this
 
 ⚠️ **CONSTRAINT**: WSL cannot access Windows `localhost` - use Windows host IP (172.x.x.1).
 
+⚠️ **CONSTRAINT**: On VPS/native Linux, run directly without WSL wrappers - just `cd ~/browser-automation && node dom_screenshot.js <URL>`.
+
+⚠️ **CONSTRAINT**: Browser extensions don't persist in headless Playwright - each run starts fresh with no extensions.
+
 ⚠️ **CONSTRAINT**: Each command starts fresh - no browser state persists between commands.
 
 ⚠️ **CONSTRAINT**: Coordinates are viewport-relative - scrolling changes what's at a given coordinate.
@@ -1438,6 +1442,10 @@ source ~/.nvm/nvm.sh  # ALWAYS include this
 ✅ **BEST PRACTICE**: Use aria-* attributes from changes.json to verify UI state.
 
 ✅ **BEST PRACTICE**: Keep project-specific coordinates in that project's CLAUDE.md.
+
+✅ **BEST PRACTICE**: On VPS, set up `~/browser-automation/` with `npm init -y && npm install playwright` - this creates a clean, isolated environment.
+
+✅ **BEST PRACTICE**: Use DuckDuckGo instead of Google on datacenter IPs to avoid CAPTCHAs.
 
 ### Anti-Patterns to Avoid
 

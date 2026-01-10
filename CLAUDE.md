@@ -276,9 +276,35 @@ bunx convex dev      # Start Convex backend
 
 ---
 
+## Browser Automation Tools
+
+Located in `implementation/browser-tools/`:
+
+```bash
+# Setup (one-time)
+cd ~/browser-automation && npm install playwright && npx playwright install firefox
+
+# Persistent browser control
+node browser.js &                    # Start server
+node browser.js goto https://...     # Navigate
+node browser.js click 500,300        # Click
+node browser.js type "text"          # Type
+node browser.js press Enter          # Press key
+node browser.js shot label           # Screenshot
+node browser.js stop                 # Stop
+
+# DOM debugging (stateless, captures mutations)
+node dom_screenshot.js <url> [action] [arg]
+
+# Vercel login
+node login_vercel.js email@example.com [code]
+```
+
+---
+
 ## Reference Documentation (ii Pairs)
 
 | Instruction | Implementation |
 |-------------|----------------|
 | `instruction/vps-setup.md` | `implementation/setup-vps.sh` |
-| `instruction/local_browser_automation.md` | `implementation/dom_screenshot.js` |
+| `instruction/local_browser_automation.md` | `implementation/browser-tools/` |
