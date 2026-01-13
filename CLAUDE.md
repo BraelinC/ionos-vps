@@ -296,9 +296,35 @@ node browser.js stop                 # Stop
 # DOM debugging (stateless, captures mutations)
 node dom_screenshot.js <url> [action] [arg]
 
+# Desktop control (control existing VNC display :5)
+node desktop_control.js screenshot [file]   # Screenshot VNC display
+node desktop_control.js click X,Y           # Click at coordinates
+node desktop_control.js move X,Y            # Move mouse
+node desktop_control.js press Enter         # Press key
+node desktop_control.js scroll 300          # Scroll (positive=down)
+node desktop_control.js hotkey Ctrl c       # Key combination
+
+# Debug browser (captures console, errors, network)
+node debug_browser.js <url>
+
 # Vercel login
 node login_vercel.js email@example.com [code]
 ```
+
+### Desktop Control Dependencies
+
+The desktop control tool uses `xte` from xautomation (auto-downloaded to /tmp):
+
+```bash
+# First run auto-downloads xautomation
+cd /tmp && apt-get download xautomation && dpkg -x xautomation*.deb /tmp/xauto_extracted
+```
+
+### XWD Screenshot Conversion
+
+Screenshots use `xwd` + Python PIL to convert:
+- Capture: `DISPLAY=:5 xwd -root -out /tmp/capture.xwd`
+- Convert: Python script parses XWD header and saves as PNG
 
 ---
 
