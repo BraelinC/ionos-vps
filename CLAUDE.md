@@ -1,336 +1,325 @@
-# CLAUDE.md - IONOS VPS Agent
+# CLAUDE.md - IONOS VPS for Claude Code
+
+> Self-hosted AI coding environment on IONOS VPS with browser automation.
 
 ---
 
-## The "ii" Framework (Instruction + Implementation)
+## Quick Reference for Claude Code
 
-A self-improving documentation pattern for AI agents. Every workflow exists as TWO files that evolve together.
-
-### Core Concept
-
-```
-instruction/[name].md    →    The "what" and "why" (human-readable docs)
-implementation/[name].*  →    The "how" (executable code/scripts)
+### SSH Access (tmux auto-attaches)
+```bash
+ssh root@74.208.72.227
 ```
 
-**Why two files?**
-- Instructions survive code rewrites
-- Implementation can be regenerated from good instructions
-- Constraints and best practices accumulate over time
-- Any agent can pick up where another left off
-
-### The Loop
-
+### VNC Access (view desktop via browser)
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│   READ instruction  ──►  CODE implementation  ──►  EXECUTE  │
-│         ▲                                            │      │
-│         │                                            │      │
-│         └────────────────  ANNEAL  ◄─────────────────┘      │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+https://vps.braelin.uk/vnc.html?password=daytona&autoconnect=true
 ```
 
-1. **READ** - Find instruction file, check for `⚠️ CONSTRAINT` and `✅ BEST PRACTICE` markers
-2. **CODE** - Write/update implementation based on instruction + accumulated knowledge
-3. **EXECUTE** - Run the implementation
-4. **ANNEAL** - Update instruction based on outcome:
-   - **On failure:** Add `⚠️ CONSTRAINT: [what failed and why]`
-   - **On success:** Add `✅ BEST PRACTICE: [what worked and why]`
-
-### Rules
-
-| Rule | Description |
-|------|-------------|
-| **Never Code Blind** | Always read instruction before writing implementation |
-| **Never Regress** | If a constraint exists, respect it - someone learned that the hard way |
-| **Always Anneal** | After every execution, update instruction with learnings |
-| **Instructions Win** | If instruction and implementation disagree, update the code |
-
----
-
-## Project Overview
-
-Self-hosted AI coding agent environment on IONOS VPS with VNC browser access via Cloudflare tunnel.
-
-- **Tech Stack**: Ubuntu 24.04 + XFCE4 + TightVNC + noVNC + Cloudflare Tunnel
-- **VNC Port**: 5901 (via tunnel: vps.braelin.uk)
-- **SSH**: root@74.208.72.227
-
-## Directory Structure (ii Framework)
-
-```
-ionos-vps/
-├── CLAUDE.md                              # This file (project context)
-├── instruction/                           # The "what" and "why"
-│   ├── vps-setup.md                       # VPS setup documentation
-│   └── local_browser_automation.md        # Browser automation docs
-├── implementation/                        # The "how" (executable)
-│   ├── setup-vps.sh                       # VPS setup script
-│   └── dom_screenshot.js                  # Browser automation script
-└── web/                                   # Next.js + Convex web UI
-    ├── src/app/
-    ├── convex/
-    └── package.json
-```
-
-## VPS Access
-
-| Method | URL/Command |
-|--------|-------------|
-| **VNC (Auto-connect)** | https://vps.braelin.uk/vnc.html?password=daytona&autoconnect=true |
-| **SSH (tmux)** | `ssh root@74.208.72.227` |
-| **VNC Client** | 74.208.72.227:5901 (password: daytona) |
-
-## VPS Specs
-
+### VPS Specs
 | Resource | Value |
 |----------|-------|
 | Host | 74.208.72.227 |
 | OS | Ubuntu 24.04 |
-| CPU | 1 vCore |
 | RAM | 848MB + 2GB swap |
-| Disk | 10GB NVMe |
-| Tunnel | vps.braelin.uk |
-
-## What's Installed
-
-- **AI CLI Tools**: Claude Code 2.1.2 (`claude`)
-- **Desktop**: XFCE4 + TightVNC + noVNC
-- **Terminal**: Terminator (scrollbar), tmux (mouse scroll, 50k history)
-- **Browser**: Firefox 146.0.1 + Playwright
-- **Tunnel**: Cloudflare permanent tunnel (ionos-vps)
+| Disk | 10GB NVMe (watch free space!) |
 
 ---
 
-## Browser Automation Testing
+## Tools Available to Claude Code
 
-### Full Documentation
+### 1. Persistent Browser (`browser.js`)
 
-See `instruction/local_browser_automation.md` for complete documentation:
-
-- Full architecture diagrams (Windows → WSL → Playwright → Firefox)
-- The complete agent loop (NAVIGATE → ANALYZE → DECIDE → ACT → VERIFY → REPEAT)
-- DOM change detection system (MutationObserver, significance filtering)
-- Tool commands reference (navigate, click, type, press, scroll)
-- Coordinate system & element finding strategies
-- Decision trees (action selection, verification, error recovery)
-- Debugging & troubleshooting guide
-- Extension points for custom actions
-
-### Quick Start - VPS Browser Automation
+**Use when:** You need to keep browser state across multiple commands (login sessions, multi-step forms).
 
 ```bash
-# On VPS via SSH
-cd /root/automation && DISPLAY=:1 node test-firefox.js
+# Start persistent browser (runs in background)
+cd ~/ionos-vps/implementation/browser-tools && node browser.js &
+
+# Commands (all maintain state)
+node browser.js goto https://example.com
+node browser.js click 500,300
+node browser.js type "hello world"
+node browser.js press Enter
+node browser.js shot label_name
+node browser.js stop
 ```
 
-### Quick Start - Local WSL Browser Agent
+**Output:** `shot_N_label.png` in current directory
+
+### 2. Stateless Browser (`dom_screenshot.js`)
+
+**Use when:** Single-action verification, DOM mutation analysis, or debugging.
 
 ```bash
-# 1. Navigate to VPS VNC
-wsl -d Ubuntu -- bash -c 'source ~/.nvm/nvm.sh && cd ~/browser-automation && node dom_screenshot.js https://vps.braelin.uk/vnc.html?password=daytona&autoconnect=true'
+cd ~/ionos-vps/implementation/browser-tools
 
-# 2. Copy screenshots for analysis
-wsl -d Ubuntu -- cp ~/browser-automation/shot_*.png /mnt/c/HealthyMama/ionos-vps/
+# Navigate only
+node dom_screenshot.js https://example.com
+
+# With action
+node dom_screenshot.js https://example.com click 500,300
+node dom_screenshot.js https://example.com type "search query"
+node dom_screenshot.js https://example.com press Enter
+node dom_screenshot.js https://example.com scroll 500
+
+# Sequence of actions
+node dom_screenshot.js https://example.com sequence "click,500,300|type,hello|press,Enter"
 ```
 
-### Agent Loop
+**Output:**
+- `shot_0.png` through `shot_N.png` (screenshots on DOM changes)
+- `changes.json` (mutation timeline with significance markers)
+
+### 3. Desktop Control (`desktop_control.js`)
+
+**Use when:** Controlling native apps in VNC, not just browsers.
+
+```bash
+cd ~/ionos-vps/implementation/browser-tools
+
+# Screenshot VNC display
+node desktop_control.js screenshot /tmp/desktop.png
+
+# Mouse/keyboard
+node desktop_control.js click 500,300
+node desktop_control.js move 640,360
+node desktop_control.js press Enter
+node desktop_control.js scroll 300
+node desktop_control.js hotkey Ctrl c
+```
+
+---
+
+## Decision Tree: Which Tool to Use
 
 ```
-1. NAVIGATE → Take initial screenshot + watch DOM
-2. ANALYZE  → Read screenshot + changes.json
-3. DECIDE   → What action to take (click/type/scroll)
-4. ACT      → Execute action, capture DOM changes
-5. VERIFY   → Check if goal achieved
-6. REPEAT   → Until task complete
+┌─────────────────────────────────────┐
+│ What are you automating?            │
+└──────────────┬──────────────────────┘
+               │
+    ┌──────────┴──────────┐
+    ▼                     ▼
+┌─────────┐         ┌─────────────┐
+│ Browser │         │ Desktop App │
+│ (Web)   │         │ (Native)    │
+└────┬────┘         └──────┬──────┘
+     │                     │
+     │                     ▼
+     │              ┌─────────────────┐
+     │              │ desktop_control │
+     │              │ .js             │
+     │              └─────────────────┘
+     │
+     ▼
+┌─────────────────────────────────────┐
+│ Do you need state between commands? │
+└──────────────┬──────────────────────┘
+               │
+    ┌──────────┴──────────┐
+    ▼                     ▼
+┌─────────┐         ┌─────────┐
+│  YES    │         │   NO    │
+└────┬────┘         └────┬────┘
+     │                   │
+     ▼                   ▼
+┌─────────────┐   ┌─────────────────┐
+│ browser.js  │   │ dom_screenshot  │
+│ (persistent)│   │ .js (stateless) │
+└─────────────┘   └─────────────────┘
 ```
 
-### Tool Commands
+---
 
-| Action | Command |
-|--------|---------|
-| Navigate | `node dom_screenshot.js <URL>` |
-| Click | `node dom_screenshot.js <URL> click X,Y` |
-| Type | `node dom_screenshot.js <URL> type "text"` |
-| Press | `node dom_screenshot.js <URL> press Enter` |
-| Scroll | `node dom_screenshot.js <URL> scroll 500` |
+## Workflow Examples
 
-### DOM Change Verification
+### Example 1: Login to a Site (Persistent Browser)
 
-After each action, check `changes.json`:
+```bash
+# Start browser
+cd ~/ionos-vps/implementation/browser-tools
+node browser.js &
+
+# Navigate to login
+node browser.js goto https://app.example.com/login
+
+# Screenshot to see form
+node browser.js shot login_page
+
+# Click email field, type, click password, type
+node browser.js click 640,300
+node browser.js type "user@example.com"
+node browser.js click 640,360
+node browser.js type "password123"
+
+# Submit
+node browser.js click 640,420
+node browser.js shot after_login
+
+# Continue using session...
+node browser.js goto https://app.example.com/dashboard
+
+# When done
+node browser.js stop
+```
+
+### Example 2: Verify UI Behavior (Stateless + DOM Analysis)
+
+```bash
+cd ~/ionos-vps/implementation/browser-tools
+
+# Click a tab and capture DOM changes
+node dom_screenshot.js https://app.example.com click 500,100
+
+# Check changes.json for:
+# - aria-selected changes
+# - childList mutations (new content added)
+# - characterData changes (text updated)
+cat changes.json | jq '.timeline[1].mutations'
+```
+
+### Example 3: Take Screenshot for Claude Vision
+
+```bash
+# Take screenshot of any URL
+cd ~/ionos-vps/implementation/browser-tools
+node dom_screenshot.js https://news.ycombinator.com
+
+# Screenshot saved as shot_0.png
+# Read it back for vision analysis
+```
+
+---
+
+## Understanding changes.json
+
+After running `dom_screenshot.js`, check `changes.json` for DOM mutations:
+
 ```json
 {
   "screenshots": ["./shot_0.png", "./shot_1.png"],
   "totalMutations": 278,
-  "timeline": [{
-    "file": "shot_1.png",
-    "type": "significant_change",
-    "mutations": [
-      {"type": "childList", "target": ".results", "added": ["div"]},
-      {"type": "attributes", "attribute": "aria-expanded", "newValue": "true"}
-    ]
-  }]
+  "significantMutations": 12,
+  "timeline": [
+    {
+      "file": "shot_0.png",
+      "type": "initial"
+    },
+    {
+      "file": "shot_1.png", 
+      "type": "significant_change",
+      "mutations": [
+        {"type": "childList", "target": ".results", "added": ["div"]},
+        {"type": "attributes", "attribute": "aria-expanded", "newValue": "true"},
+        {"type": "characterData", "text": "Results loaded"}
+      ]
+    }
+  ]
 }
 ```
 
-### Coordinate System
-
-```
-(0,0) ───────────────────────► X (1280)
-  │
-  │    ┌────────────────────┐
-  │    │  Browser Viewport  │
-  │    │    1280 x 720      │
-  │    │      (640,360)     │
-  │    │         ●          │
-  │    │       center       │
-  │    └────────────────────┘
-  ▼
-  Y (720)
-```
+### What's Significant?
+| Mutation | Significant? | Meaning |
+|----------|--------------|---------|
+| `childList` + added | ✓ | New elements appeared (dropdown, modal, results) |
+| `childList` + removed | ✓ | Elements gone (modal closed, item deleted) |
+| `characterData` | ✓ | Text changed |
+| `aria-expanded` | ✓ | Accordion/dropdown toggled |
+| `aria-selected` | ✓ | Tab/option selected |
+| Cursor/outline changes | ✗ | Trivial (animations, focus) |
 
 ---
 
-## SSH + tmux Usage
+## Coordinate System
+
+```
+(0,0)                                          (1280,0)
+  ┌────────────────────────────────────────────┐
+  │              VIEWPORT 1280×720             │
+  │                                            │
+  │     Top nav: y ≈ 30-60                     │
+  │                                            │
+  │     Main content: y ≈ 200-500              │
+  │                                            │
+  │              Center: (640, 360)            │
+  │                                            │
+  │     Footer: y ≈ 650-720                    │
+  └────────────────────────────────────────────┘
+(0,720)                                       (1280,720)
+```
+
+### Click Targeting
+- **Buttons**: Click center, not edges
+- **Input fields**: Click center, then type
+- **If click misses**: Adjust by ±20-50px and retry
+
+---
+
+## Constraints & Best Practices
+
+### ⚠️ Constraints
+- **848MB RAM** — always use swap for heavy tasks
+- **10GB disk** — run `df -h` before installs
+- **No Google** — use DuckDuckGo (datacenter IPs get CAPTCHA'd)
+- **Stateless per command** — `dom_screenshot.js` starts fresh each time
+- **Type needs focus** — click input first, then type
+
+### ✅ Best Practices
+- Use `browser.js` for multi-step flows requiring login/state
+- Use `dom_screenshot.js` for verification and DOM analysis
+- Verify actions via `changes.json`, not just screenshots
+- Break complex tasks into small, verifiable steps
+- Use `aria-*` attributes from changes.json to verify UI state
+
+---
+
+## Service Management
 
 ```bash
-# SSH auto-attaches to tmux 'main' session
-ssh root@74.208.72.227
-
-# Manual tmux commands
-tmux ls                    # List sessions
-tmux attach -t main        # Attach to main session
-Ctrl+b d                   # Detach from session
-```
-
-**Features:**
-- Mouse scroll enabled in tmux
-- 50,000 line scrollback history
-- Persists across reboots
-
----
-
-## Constraints
-
-⚠️ CONSTRAINT: VPS has only 848MB RAM - always use swap for heavy tasks.
-
-⚠️ CONSTRAINT: 10GB disk (1.7GB free) - monitor with `df -h` before installs.
-
-⚠️ CONSTRAINT: Use DuckDuckGo instead of Google (no CAPTCHA on datacenter IPs).
-
-⚠️ CONSTRAINT: Must source nvm before running node commands in WSL.
-
-⚠️ CONSTRAINT: Each browser command starts fresh - no state persists between commands.
-
-⚠️ CONSTRAINT: Type action doesn't auto-focus - click input first.
-
-## Best Practices
-
-✅ BEST PRACTICE: Use Cloudflare tunnel (vps.braelin.uk) for reliable VNC access.
-
-✅ BEST PRACTICE: SSH auto-attaches to tmux - no need for manual attach.
-
-✅ BEST PRACTICE: Mouse scroll works in tmux with `set -g mouse on`.
-
-✅ BEST PRACTICE: Use Firefox from Mozilla APT, not snap (saves 5GB).
-
-✅ BEST PRACTICE: Verify actions via changes.json, not just screenshots.
-
-✅ BEST PRACTICE: Click center of elements, not edges.
-
-✅ BEST PRACTICE: Break complex tasks into small, verifiable steps.
-
-✅ BEST PRACTICE: Use aria-* attributes from changes.json to verify UI state.
-
----
-
-## Quick Commands (on VPS)
-
-```bash
-# Check resources
-free -h && df -h /
-
-# Use Claude Code
-claude
-
-# Launch browser for automation
-cd /root/automation && DISPLAY=:1 node test-firefox.js
-
-# Restart VNC
-systemctl restart vncserver@1
-
 # Check all services
 systemctl status vncserver@1 novnc cloudflared tmux-main
-```
 
-## Web UI Development
+# Restart VNC if display issues
+systemctl restart vncserver@1
 
-```bash
-cd ionos-vps/web
-bun install
-bun run dev          # Start Next.js dev server
-bunx convex dev      # Start Convex backend
+# Resource check
+free -h && df -h /
 ```
 
 ---
 
-## Browser Automation Tools
+## Directory Structure
 
-Located in `implementation/browser-tools/`:
-
-```bash
-# Setup (one-time)
-cd ~/browser-automation && npm install playwright && npx playwright install firefox
-
-# Persistent browser control
-node browser.js &                    # Start server
-node browser.js goto https://...     # Navigate
-node browser.js click 500,300        # Click
-node browser.js type "text"          # Type
-node browser.js press Enter          # Press key
-node browser.js shot label           # Screenshot
-node browser.js stop                 # Stop
-
-# DOM debugging (stateless, captures mutations)
-node dom_screenshot.js <url> [action] [arg]
-
-# Desktop control (control existing VNC display :5)
-node desktop_control.js screenshot [file]   # Screenshot VNC display
-node desktop_control.js click X,Y           # Click at coordinates
-node desktop_control.js move X,Y            # Move mouse
-node desktop_control.js press Enter         # Press key
-node desktop_control.js scroll 300          # Scroll (positive=down)
-node desktop_control.js hotkey Ctrl c       # Key combination
-
-# Debug browser (captures console, errors, network)
-node debug_browser.js <url>
-
-# Vercel login
-node login_vercel.js email@example.com [code]
 ```
-
-### Desktop Control Dependencies
-
-The desktop control tool uses `xte` from xautomation (auto-downloaded to /tmp):
-
-```bash
-# First run auto-downloads xautomation
-cd /tmp && apt-get download xautomation && dpkg -x xautomation*.deb /tmp/xauto_extracted
+ionos-vps/
+├── CLAUDE.md                              # This file
+├── instruction/                           # Documentation
+│   ├── vps-setup.md                       # VPS setup notes
+│   └── local_browser_automation.md        # Full automation docs
+└── implementation/                        
+    ├── browser-tools/                     # Main tools
+    │   ├── browser.js                     # Persistent browser
+    │   ├── dom_screenshot.js              # Stateless + DOM capture
+    │   ├── desktop_control.js             # VNC desktop control
+    │   └── debug_browser.js               # Console/network debug
+    └── dom_screenshot.js                  # (legacy copy)
 ```
-
-### XWD Screenshot Conversion
-
-Screenshots use `xwd` + Python PIL to convert:
-- Capture: `DISPLAY=:5 xwd -root -out /tmp/capture.xwd`
-- Convert: Python script parses XWD header and saves as PNG
 
 ---
 
-## Reference Documentation (ii Pairs)
+## The "ii" Framework
 
-| Instruction | Implementation |
-|-------------|----------------|
-| `instruction/vps-setup.md` | `implementation/setup-vps.sh` |
-| `instruction/local_browser_automation.md` | `implementation/browser-tools/` |
+Every workflow has two files:
+
+```
+instruction/[name].md    →    The "what" and "why"
+implementation/[name].*  →    The "how" (executable)
+```
+
+**Loop:**
+1. **READ** instruction (check for ⚠️ CONSTRAINT markers)
+2. **CODE** implementation
+3. **EXECUTE** 
+4. **ANNEAL** — update instruction with learnings:
+   - On failure: Add `⚠️ CONSTRAINT: [what failed]`
+   - On success: Add `✅ BEST PRACTICE: [what worked]`
