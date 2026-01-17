@@ -67,6 +67,7 @@ Points to: `implementation/[name].*`
 |-------------|----------------|--------|
 | `instruction/vps-setup.md` | VPS is live | ✅ Done |
 | `instruction/browser-tools.md` | `implementation/browser-tools/` | ✅ Done |
+| `instruction/claude-code-dispatch.md` | `~/.claude/plugins/clawdbot-notify/` | ✅ Done |
 | `instruction/[next-task].md` | `implementation/[next-task].*` | 🔲 Todo |
 
 ---
